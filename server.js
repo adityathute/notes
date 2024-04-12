@@ -19,7 +19,7 @@ app.use(session({
 
 // Middleware function to check token
 const checkToken = (req, res, next) => {
-    
+
     // Extract the token from the request headers
     const accessToken = storage.accessToken;
     const refreshToken = storage.accessToken;
@@ -30,8 +30,8 @@ const checkToken = (req, res, next) => {
         
         if (refreshToken) {
             console.log('Refresh token exists:', refreshToken);
-            
         }
+
         // If access token is already present, continue to the next middleware
         req.loginRequired = false;
         next();
@@ -43,7 +43,6 @@ const checkToken = (req, res, next) => {
             
         } else {
             req.loginRequired = true;
-            
         }
         next();
     }
@@ -53,38 +52,27 @@ const checkToken = (req, res, next) => {
 app.use((req, res, next) => {
     if (req.path !== '/login') {
         req.session.currentUrl = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
-        checkToken(req, res, next);
-    } else {
-        next();
     }
+    checkToken(req, res, next);
 });
 
 // Route handler for the homepage
 app.get('/login', (req, res) => {
-    const CLIENT_ID = process.env.CLIENT_ID;
-    const CLIENT_SECRET = process.env.CLIENT_SECRET;
+    if (req.loginRequired) {
+        const returnUrl = req.session.currentUrl || '/';
+        
+        // Define the login URL with query parameters
+        const loginUrl = `${APILoginUrl}?returnUrl=${encodeURIComponent(returnUrl)}&appName=${encodeURIComponent(appName)}`;
+        
+        // Generate HTML for the login button with an ID
+        const loginButtonHtml = `<a href="${loginUrl}" id="loginButton">Login with Django</a>`;
 
-    const returnUrl = req.session.currentUrl || '/';
-
-    // Make a GET request with custom headers
-    axios.get(APILoginUrl, {
-        headers: {
-            'Client-ID': CLIENT_ID,
-            'Client-Secret': CLIENT_SECRET,
-        }
-    })
-    .then((response) => {
-        // Customize the response based on the server's response
-        // For example, you might check the response status or data
-        // and modify the HTML accordingly
-        // const loginButtonHtml = `<a href="${APILoginUrl}">Login with Django</a>`;
-        const loginButtonHtml = `<a href="${APILoginUrl}?returnUrl=${encodeURIComponent(returnUrl)}&appName=${encodeURIComponent(appName)}">Login with Django</a>`;
+        // Send the HTML response
         res.send(`Hello from Express.js! ${loginButtonHtml}`);
-    })
-    .catch((error) => {
-        console.error(error);
-        res.status(500).send('Error occurred while processing your request.');
-    });
+
+    } else {
+        res.redirect(req.session.currentUrl);
+    }
 });
 
 // Route handler for the homepage
@@ -97,7 +85,6 @@ app.get('/', (req, res) => {
         res.send(`Homepage`);
     }
 });
-
 
 // Route handler for receiving token from Django
 app.post('/receive_data', (req, res) => {
