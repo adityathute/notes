@@ -31,8 +31,9 @@ async function handleExpiredToken(req, res, next) {
 
         // Check if the access token has expired
         if (decodedAccessToken && decodedAccessToken.payload.exp * 1000 < Date.now()) {
-            // Token has expired, clear it from the session
-            console.log('Expired access token removed from session');
+            // Token has expired, calculate remaining expiration time in seconds
+            const remainingAccessTokenExp = (decodedAccessToken.payload.exp * 1000 - Date.now()) / 1000;
+            console.log('Access token has expired. Remaining time:', remainingAccessTokenExp, 'seconds');
             // TODO: Implement logic to refresh access token using refresh token from Django server
             try {
                 // Call a function to refresh the access token using the refresh token
@@ -43,22 +44,30 @@ async function handleExpiredToken(req, res, next) {
                 console.error('Error refreshing access token:', error);
             }
         } else {
+            // Calculate remaining expiration time in seconds
+            const remainingAccessTokenExp = (decodedAccessToken.payload.exp * 1000 - Date.now()) / 1000;
+            console.log('Remaining access token expiration time:', remainingAccessTokenExp, 'seconds');
             req.arToken = true;
         }
         
         // Check if the refresh token has expired
         if (decodedRefreshToken && decodedRefreshToken.payload.exp * 1000 < Date.now()) {
-            // Token has expired, clear it from the session
-            console.log('Expired refresh token removed from session');
+            // Token has expired, calculate remaining expiration time in seconds
+            const remainingRefreshTokenExp = (decodedRefreshToken.payload.exp * 1000 - Date.now()) / 1000;
+            console.log('Refresh token has expired. Remaining time:', remainingRefreshTokenExp, 'seconds');
             // TODO: Implement logic to refresh access token using refresh token from Django server
             req.arToken = false;
         } else {
+            // Calculate remaining expiration time in seconds
+            const remainingRefreshTokenExp = (decodedRefreshToken.payload.exp * 1000 - Date.now()) / 1000;
+            console.log('Remaining refresh token expiration time:', remainingRefreshTokenExp, 'seconds');
             req.arToken = true;
         }
     }
     
     next();
 }
+
 
 async function refreshAccessTokenFromDjango(refreshToken) {
     try {
@@ -70,6 +79,7 @@ async function refreshAccessTokenFromDjango(refreshToken) {
         // Extract the new access token from the response data
         const newAccessToken = response.data.access;
         console.log('newAccessToken:', newAccessToken);
+        storage.accessToken = newAccessToken;
 
         // Optionally, you can return the new access token or handle it further
         return newAccessToken;
