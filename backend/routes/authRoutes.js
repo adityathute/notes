@@ -1,7 +1,39 @@
 // routes/authRoutes.js
-
 const express = require('express');
 const router = express.Router();
+
+router.post('/login', (req, res) => {
+  // Example authentication, replace with your actual logic
+  req.session.user = { authenticated: true };
+  res.status(200).json({ message: 'Logged in successfully' });
+});
+
+router.post('/logout', (req, res) => {
+  req.session.destroy(err => {
+    if (err) {
+      return res.status(500).json({ message: 'Logout failed' });
+    }
+    res.status(200).json({ message: 'Logged out successfully' });
+  });
+});
+
+module.exports = router;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const express = require('express');
+// const router = express.Router();
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const { verifyAccessToken, verifyRefreshToken, refreshToken } = require('../services/utils');
@@ -72,58 +104,58 @@ const authenticateUser = async (req, res) => {
     // }
 };
 
-// Handle login POST request
-router.post('/login', async (req, res) => {
-    const response = await axios.post(
-        'http://127.0.0.1:8000/api/get_token',
-        {},
-        {
-            headers: {
-                'Content-Type': 'application/json',
-                'Cookie': req.headers.cookie
-            },
-            withCredentials: true
-        }
-    );
+// // Handle login POST request
+// router.post('/login', async (req, res) => {
+//     const response = await axios.post(
+//         'http://127.0.0.1:8000/api/get_token',
+//         {},
+//         {
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 'Cookie': req.headers.cookie
+//             },
+//             withCredentials: true
+//         }
+//     );
 
-    // Check if the response status is 'error'
-    if (response.status === 'loginIsRequired') {
-        // Handle the error response
-        return res.status(500).json({ message: 'Error: Tokens not found' });
-    }
+//     // Check if the response status is 'error'
+//     if (response.status === 'loginIsRequired') {
+//         // Handle the error response
+//         return res.status(500).json({ message: 'Error: Tokens not found' });
+//     }
 
-    // try {
-    //     // Call the function to authenticate user and set cookie
-    //     await authenticateUser(req, res);
+//     // try {
+//     //     // Call the function to authenticate user and set cookie
+//     //     await authenticateUser(req, res);
 
-    //     // Redirect the user to the homepage after successful login
-    //     res.redirect('/');
-    // } catch (error) {
-    //     // Handle login failure
-    //     console.error(error);
-    //     res.status(500).json({ error: 'Login failed' });
-    // }
-});
+//     //     // Redirect the user to the homepage after successful login
+//     //     res.redirect('/');
+//     // } catch (error) {
+//     //     // Handle login failure
+//     //     console.error(error);
+//     //     res.status(500).json({ error: 'Login failed' });
+//     // }
+// });
 
-const CLIENT_ID = 'your_client_id';
-const CLIENT_SECRET = 'your_client_secret';
-const REDIRECT_URI = 'http://localhost:3000/callback';
-const AUTH_SERVER_URL = 'http://django-server.com/oauth/authorize';
+// const CLIENT_ID = 'your_client_id';
+// const CLIENT_SECRET = 'your_client_secret';
+// const REDIRECT_URI = 'http://localhost:3000/callback';
+// const AUTH_SERVER_URL = 'http://django-server.com/oauth/authorize';
 
-router.get('/login', (req, res) => {
-  // Redirect the user to the authorization server for login
-  const params = qs.stringify({
-    response_type: 'code',
-    client_id: CLIENT_ID,
-    redirect_uri: REDIRECT_URI,
-  });
-  res.redirect(`${AUTH_SERVER_URL}?${params}`);
-});
+// router.get('/login', (req, res) => {
+//   // Redirect the user to the authorization server for login
+//   const params = qs.stringify({
+//     response_type: 'code',
+//     client_id: CLIENT_ID,
+//     redirect_uri: REDIRECT_URI,
+//   });
+//   res.redirect(`${AUTH_SERVER_URL}?${params}`);
+// });
 
-// Handle logout POST request
-router.post('/logout', (req, res) => {
-    res.clearCookie('user_data'); // Clear the user ID cookie
-    res.redirect('/');
-});
+// // Handle logout POST request
+// router.post('/logout', (req, res) => {
+//     res.clearCookie('user_data'); // Clear the user ID cookie
+//     res.redirect('/');
+// });
 
-module.exports = router;
+// module.exports = router;
