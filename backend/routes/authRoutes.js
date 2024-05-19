@@ -3,6 +3,7 @@ const axios = require('axios');
 const express = require('express');
 const router = express.Router();
 const { initializeUserData } = require('../services/utils');
+const jwt = require('jsonwebtoken');
 
 router.get('/status', (req, res) => {
   // Check authentication status here (e.g., check if user is logged in)
@@ -11,6 +12,14 @@ router.get('/status', (req, res) => {
     res.status(200).json({ isAuthenticated: true });
   } else {
     res.status(200).json({ isAuthenticated: false });
+  }
+});
+
+router.get('/user', (req, res) => {
+  // Check authentication status here (e.g., check if user is logged in)
+  const { data } = initializeUserData(req);
+  if (data && data.isAuthenticated) {
+    res.status(200).json({ data });
   }
 });
 
@@ -33,8 +42,10 @@ router.post('/login', async (req, res) => {
     // Check if the response status is 200
     if (response.status === 200) {
       const { access } = response.data;
+      const decodedToken = jwt.decode(access);
       const isAuthenticated = true;
-      const userData = { access, isAuthenticated };
+      const user_id = decodedToken.user_id;
+      const userData = { access, isAuthenticated, user_id };
 
       // Set user data in cookie
       const expirationDate = new Date();
