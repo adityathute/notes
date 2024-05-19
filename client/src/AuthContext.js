@@ -27,10 +27,13 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.post('/auth/login');
       console.log('Login response:', response);
+      // Check if the authentication was successful
       if (response.data.success) {
         setIsAuthenticated(true);
+      } else {
+        setIsAuthenticated(false);
+        window.location.href = 'http://127.0.0.1:8000/u/signin/identifier';
       }
-      return response.data;
     } catch (error) {
       return { message: error.response.data.message };
     }

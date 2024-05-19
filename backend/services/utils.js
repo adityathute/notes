@@ -28,9 +28,9 @@ const verifyAccessToken = (req, access) => {
             const expTime = decodedToken.payload.exp;
             const currentTimestamp = Math.floor(Date.now() / 1000);
             const remainingTime = expTime - currentTimestamp;
-            
+
             // Log the remaining time
-            
+
             // Check if the token has expired
             if (currentTimestamp < expTime) {
                 console.log('Access Token is still valid:', remainingTime, 'seconds');
@@ -57,9 +57,9 @@ const verifyRefreshToken = (req, refresh) => {
             const expTime = decodedToken.payload.exp;
             const currentTimestamp = Math.floor(Date.now() / 1000);
             const remainingTime = expTime - currentTimestamp;
-            
+
             // Log the remaining time
-            
+
             // Check if the token has expired
             if (currentTimestamp < expTime) {
                 console.log('Refresh Token is still valid:', remainingTime, 'seconds');

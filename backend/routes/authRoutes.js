@@ -26,7 +26,7 @@ router.get('/user', (req, res) => {
 router.post('/login', async (req, res) => {
   try {
     const response = await axios.post(
-      `${process.env.AUTHURL}/api/get_token`,
+      `${process.env.AUTHURL}/api/authenticate`,
       {},
       {
         headers: {
@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
     );
 
     // Check if the response status is 200
-    if (response.status === 200) {
+    if (response.data.auth === 'isAuthenticated') {
       const { access } = response.data;
       const decodedToken = jwt.decode(access);
       const isAuthenticated = true;
@@ -51,11 +51,13 @@ router.post('/login', async (req, res) => {
       const expirationDate = new Date();
       expirationDate.setDate(expirationDate.getDate() + 1); // Expires in 1 day
       res.cookie('user_data', JSON.stringify(userData), { httpOnly: true, secure: true, sameSite: 'Strict', expires: expirationDate });
-      // Send success response
-      res.json({ success: true });
+      // Send success response  
+      res.json({ success: true, message: 'authenticated' });
+    } else if (response.data.auth === 'unAuthenticated') {
+      res.json({ success: false, message: 'unAuthenticated' });
     } else {
       // Send failure response if authentication fails
-      res.status(response.status).json({ success: false, message: 'Authentication failed' });
+      res.json({ success: false, message: 'Authentication failed' });
     }
   } catch (error) {
     console.error('Login failed:', error);
@@ -64,7 +66,6 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
-  // Check authentication status here (e.g., check if user is logged in)
   res.clearCookie('user_data');
   res.json({ success: true });
 });
