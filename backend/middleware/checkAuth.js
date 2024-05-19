@@ -3,7 +3,6 @@ const { initializeUserData, verifyAccessToken, verifyRefreshToken, refreshToken 
 
 // Main middleware function to check authentication and verify tokens
 const checkAuth = async (req, res, next) => {
-    
     next();
 };
 
