@@ -9,9 +9,9 @@ router.get('/status', (req, res) => {
   // Check authentication status here (e.g., check if user is logged in)
   const { data } = initializeUserData(req);
   if (data && data.isAuthenticated) {
-    res.status(200).json({ isAuthenticated: true });
+    res.status(200).json({ auth: true });
   } else {
-    res.status(200).json({ isAuthenticated: false });
+    res.status(200).json({ auth: false });
   }
 });
 
@@ -40,24 +40,29 @@ router.post('/login', async (req, res) => {
     );
 
     // Check if the response status is 200
-    if (response.data.auth === 'isAuthenticated') {
-      const { access } = response.data;
-      const decodedToken = jwt.decode(access);
-      const isAuthenticated = true;
-      const user_id = decodedToken.user_id;
-      const userData = { access, isAuthenticated, user_id };
-
-      // Set user data in cookie
-      const expirationDate = new Date();
-      expirationDate.setDate(expirationDate.getDate() + 1); // Expires in 1 day
-      res.cookie('user_data', JSON.stringify(userData), { httpOnly: true, secure: true, sameSite: 'Strict', expires: expirationDate });
-      // Send success response  
-      res.json({ success: true, message: 'authenticated' });
-    } else if (response.data.auth === 'unAuthenticated') {
-      res.json({ success: false, message: 'unAuthenticated' });
+    if (response.data.success) {
+      if (response.data.client) {
+        if (response.data.auth) {
+          const { access, refresh } = response.data;
+          const decodedToken = jwt.decode(access);
+          const isAuthenticated = true;
+          const user_id = decodedToken.user_id;
+          const userData = { access, refresh, isAuthenticated, user_id };
+          const expirationDate = new Date();
+          expirationDate.setDate(expirationDate.getDate() + 1); // Expires in 1 day
+          // Set user data in cookie
+          res.cookie('user_data', JSON.stringify(userData), { httpOnly: true, secure: true, sameSite: 'None', expires: expirationDate });
+          // Send success response  
+          res.json({ success: true, auth: response.data.auth, message: 'Authenticated.' });
+        } else {
+          res.json({ success: true, auth: response.data.auth, message: 'Is not Authenticated.' });
+        }
+      } else {
+        res.json({ success: false, message: 'Client Not Verified.' });
+      }
     } else {
       // Send failure response if authentication fails
-      res.json({ success: false, message: 'Authentication failed' });
+      res.json({ success: false, message: 'Authentication fails' });
     }
   } catch (error) {
     console.error('Login failed:', error);
